@@ -1,0 +1,70 @@
+{% load static %}<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}Dasbor{% endblock %} · Kedai Senja</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'menu/css/style.css' %}">
+</head>
+<body>
+  {% with url=request.resolver_match.url_name %}
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="{% url 'menu:menu_list' %}">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M5 11h17v7a8 8 0 0 1-8 8h-1a8 8 0 0 1-8-8v-7z" fill="currentColor"/>
+          <path d="M22 13h2.5a3.5 3.5 0 0 1 0 7H21" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M10 3.5c-1.2 1.6 1.2 2.6 0 4.5M15 3.5c-1.2 1.6 1.2 2.6 0 4.5" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Kedai Senja</span>
+      </a>
+      {% if user.is_authenticated %}
+      <nav class="nav" aria-label="Navigasi utama">
+        <a href="{% url 'menu:pos' %}" {% if url == "pos" %}aria-current="page"{% endif %}>Kasir</a>
+        <a href="{% url 'menu:order_list' %}" {% if url|slice:":6" == "order_" %}aria-current="page"{% endif %}>Pesanan</a>
+        <a href="{% url 'menu:menu_list' %}" {% if url|slice:":5" == "menu_" %}aria-current="page"{% endif %}>Menu</a>
+        <a href="{% url 'menu:category_list' %}" {% if url|slice:":9" == "category_" %}aria-current="page"{% endif %}>Kategori</a>
+      </nav>
+      <form class="account" method="post" action="{% url 'menu:logout' %}">
+        {% csrf_token %}
+        <span class="account__name">{{ user.get_username }}</span>
+        <button class="account__out" type="submit">Keluar</button>
+      </form>
+      {% endif %}
+    </div>
+  </header>
+  {% endwith %}
+
+  <main class="page {% block main_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite">
+    {% for message in messages %}
+      <div class="toast toast--{{ message.tags }}">
+        <span>{{ message }}</span>
+        <button type="button" aria-label="Tutup pesan">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+
+  <dialog id="confirm-dialog" class="dialog" aria-labelledby="dialog-title">
+    <form method="post" id="confirm-form" class="dialog__body">
+      {% csrf_token %}
+      <h2 id="dialog-title"></h2>
+      <p id="dialog-text"></p>
+      <div class="dialog__actions">
+        <button type="button" class="btn btn--ghost" id="dialog-dismiss" data-close>Batal</button>
+        <button type="submit" class="btn btn--danger" id="dialog-confirm">Hapus</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="{% static 'menu/js/app.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

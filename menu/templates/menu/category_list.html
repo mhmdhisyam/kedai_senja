@@ -1,0 +1,48 @@
+{% extends "menu/base.html" %}
+{% block title %}Kategori{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Kategori</h1>
+    <p class="lede">Kelompokkan menu agar mudah dicari. Kategori yang masih berisi menu tidak bisa dihapus.</p>
+  </div>
+  <a class="btn btn--primary" href="{% url 'menu:category_create' %}">Tambah kategori</a>
+</section>
+
+{% if categories %}
+<div class="table-wrap table-wrap--narrow">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Nama kategori</th>
+        <th scope="col" class="num">Jumlah menu</th>
+        <th scope="col"><span class="sr-only">Aksi</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in categories %}
+      <tr>
+        <td><strong>{{ c.name }}</strong></td>
+        <td data-label="Jumlah menu" class="num">
+          <a class="link" href="{% url 'menu:menu_list' %}?category={{ c.pk }}">{{ c.item_count }} menu</a>
+        </td>
+        <td class="row-actions">
+          <a class="btn btn--ghost btn--sm" href="{% url 'menu:category_update' c.pk %}">Ubah</a>
+          <button type="button" class="btn btn--ghost btn--sm btn--danger-text"
+                  data-delete-url="{% url 'menu:category_delete' c.pk %}"
+                  data-delete-name="{{ c.name }}">Hapus</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  <h2>Belum ada kategori</h2>
+  <p>Buat kategori dulu, misalnya Kopi atau Camilan, sebelum menambah menu.</p>
+  <a class="btn btn--primary" href="{% url 'menu:category_create' %}">Tambah kategori</a>
+</div>
+{% endif %}
+{% endblock %}

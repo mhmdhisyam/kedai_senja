@@ -1,0 +1,64 @@
+{% extends "menu/base.html" %}
+{% load menu_extras %}
+{% block title %}Struk {{ order.number }}{% endblock %}
+
+{% block content %}
+<a class="back no-print" href="{% url 'menu:order_list' %}">&larr; Kembali ke daftar pesanan</a>
+
+<div class="receipt-wrap" {% if request.GET.baru %}data-clear-cart{% endif %}>
+  <article class="receipt" aria-label="Struk pesanan {{ order.number }}">
+    <header class="receipt__head">
+      <h1>Kedai Senja</h1>
+      <p class="muted">Struk pesanan {{ order.number }}</p>
+      <span class="badge {% if order.status == 'paid' %}badge--ok{% else %}badge--off{% endif %}">{{ order.get_status_display }}</span>
+    </header>
+
+    <dl class="receipt__meta">
+      <div><dt>Waktu</dt><dd>{{ order.created_at|date:"j M Y, H:i" }}</dd></div>
+      <div><dt>Pelanggan</dt><dd>{{ order.customer_name|default:"—" }}</dd></div>
+      <div><dt>Kasir</dt><dd>{{ order.cashier.get_username|default:"—" }}</dd></div>
+    </dl>
+
+    <table class="receipt__items">
+      <caption class="sr-only">Daftar item</caption>
+      <thead class="sr-only"><tr><th>Menu</th><th>Jumlah</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        {% for it in order.items.all %}
+        <tr>
+          <td>
+            {{ it.name }}
+            <span class="muted receipt__unit">{{ it.quantity }} × {{ it.price|rupiah }}</span>
+          </td>
+          <td class="num">{{ it.subtotal|rupiah }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <dl class="receipt__sum">
+      <div class="receipt__total"><dt>Total</dt><dd>{{ order.total|rupiah }}</dd></div>
+      <div><dt>Pembayaran</dt><dd>{{ order.get_payment_method_display }}</dd></div>
+      {% if order.cash_received is not None %}
+        <div><dt>Uang diterima</dt><dd>{{ order.cash_received|rupiah }}</dd></div>
+        <div><dt>Kembalian</dt><dd>{{ order.change|rupiah }}</dd></div>
+      {% endif %}
+    </dl>
+
+    <p class="receipt__thanks">Terima kasih sudah mampir.</p>
+  </article>
+
+  <div class="receipt__actions no-print">
+    <button type="button" class="btn btn--secondary" data-print>Cetak struk</button>
+    <a class="btn btn--primary" href="{% url 'menu:pos' %}">Pesanan baru</a>
+    {% if order.status == 'paid' %}
+      <button type="button" class="btn btn--ghost btn--danger-text"
+              data-delete-url="{% url 'menu:order_cancel' order.pk %}"
+              data-delete-name="{{ order.number }}"
+              data-confirm-title="Batalkan pesanan {{ order.number }}?"
+              data-confirm-text="Status berubah menjadi Dibatalkan dan stok semua item dikembalikan."
+              data-confirm-label="Batalkan pesanan"
+              data-dismiss-label="Kembali">Batalkan pesanan</button>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

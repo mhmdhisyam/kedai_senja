@@ -1,0 +1,25 @@
+{% extends "menu/base.html" %}
+{% block title %}Masuk{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <h1>Masuk</h1>
+  <p class="lede">Dasbor ini khusus pengelola Kedai Senja.</p>
+
+  <form class="form-card" method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% include "menu/_field.html" with field=form.username %}
+    {% include "menu/_field.html" with field=form.password %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <button class="btn btn--primary btn--block" type="submit">Masuk</button>
+  </form>
+</section>
+{% endblock %}

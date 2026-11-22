@@ -1,0 +1,19 @@
+{% extends "menu/base.html" %}
+{% block title %}{% if object %}Ubah kategori{% else %}Tambah kategori{% endif %}{% endblock %}
+
+{% block content %}
+<a class="back" href="{% url 'menu:category_list' %}">&larr; Kembali ke daftar kategori</a>
+
+<section class="page-head">
+  <h1>{% if object %}Ubah kategori{% else %}Tambah kategori{% endif %}</h1>
+</section>
+
+<form class="form-card form-card--narrow" method="post" novalidate>
+  {% csrf_token %}
+  {% include "menu/_field.html" with field=form.name %}
+  <div class="form-actions">
+    <a class="btn btn--ghost" href="{% url 'menu:category_list' %}">Batal</a>
+    <button class="btn btn--primary" type="submit">{% if object %}Simpan perubahan{% else %}Tambah kategori{% endif %}</button>
+  </div>
+</form>
+{% endblock %}

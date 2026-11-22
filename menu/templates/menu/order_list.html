@@ -1,0 +1,83 @@
+{% extends "menu/base.html" %}
+{% load menu_extras %}
+{% block title %}Pesanan{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Pesanan {% if is_today %}hari ini{% else %}{{ day|date:"j F Y" }}{% endif %}</h1>
+    <p class="lede">Riwayat transaksi kasir. Pilih tanggal untuk melihat hari lain.</p>
+  </div>
+  <a class="btn btn--primary" href="{% url 'menu:pos' %}">Pesanan baru</a>
+</section>
+
+<dl class="stats stats--3">
+  <div class="stat"><dt>Pesanan lunas</dt><dd>{{ stats.count }}</dd></div>
+  <div class="stat"><dt>Pendapatan</dt><dd>{{ stats.revenue|rupiah }}</dd></div>
+  <div class="stat">
+    <dt>Tanggal</dt>
+    <dd class="stat__date">
+      <form method="get" data-autosubmit-date>
+        <label class="sr-only" for="tanggal">Pilih tanggal</label>
+        <input class="input input--date" id="tanggal" type="date" name="tanggal" value="{{ day|date:'Y-m-d' }}">
+      </form>
+    </dd>
+  </div>
+</dl>
+
+{% if orders %}
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">No.</th>
+        <th scope="col">Jam</th>
+        <th scope="col">Pelanggan</th>
+        <th scope="col" class="num">Item</th>
+        <th scope="col" class="num">Total</th>
+        <th scope="col">Bayar</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="sr-only">Aksi</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>{{ o.number }}</strong></td>
+        <td data-label="Jam">{{ o.created_at|time:"H:i" }}</td>
+        <td data-label="Pelanggan">{{ o.customer_name|default:"—" }}</td>
+        <td data-label="Item" class="num">{{ o.qty }}</td>
+        <td data-label="Total" class="num">{{ o.total|rupiah }}</td>
+        <td data-label="Bayar">{{ o.get_payment_method_display }}</td>
+        <td data-label="Status">
+          <span class="badge {% if o.status == 'paid' %}badge--ok{% else %}badge--off{% endif %}">{{ o.get_status_display }}</span>
+        </td>
+        <td class="row-actions">
+          <a class="btn btn--ghost btn--sm" href="{% url 'menu:order_detail' o.pk %}">Lihat struk</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+<nav class="pager" aria-label="Halaman">
+  {% if page_obj.has_previous %}
+    <a class="btn btn--ghost btn--sm" href="?{{ query_string }}&amp;page={{ page_obj.previous_page_number }}">Sebelumnya</a>
+  {% else %}<span></span>{% endif %}
+  <span class="muted">Halaman {{ page_obj.number }} dari {{ paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a class="btn btn--ghost btn--sm" href="?{{ query_string }}&amp;page={{ page_obj.next_page_number }}">Berikutnya</a>
+  {% else %}<span></span>{% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="empty">
+  <h2>Belum ada pesanan</h2>
+  <p>{% if is_today %}Belum ada transaksi hari ini.{% else %}Tidak ada transaksi pada tanggal ini.{% endif %}</p>
+  {% if is_today %}<a class="btn btn--primary" href="{% url 'menu:pos' %}">Buat pesanan pertama</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

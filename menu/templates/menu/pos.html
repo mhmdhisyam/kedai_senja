@@ -1,0 +1,113 @@
+{% extends "menu/base.html" %}
+{% load static menu_extras %}
+{% block title %}Kasir{% endblock %}
+{% block main_class %}page--pos{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Kasir</h1>
+    <p class="lede">Ketuk menu untuk menambah ke pesanan. Hanya menu yang dijual dan masih ada stok yang tampil.</p>
+  </div>
+</section>
+
+<div class="pos" data-pos>
+  <section aria-label="Pilih menu">
+    {% if items %}
+    <div class="pos__tools">
+      <label class="sr-only" for="pos-search">Cari menu</label>
+      <input class="input" id="pos-search" type="search" placeholder="Cari menu" autocomplete="off" data-search>
+    </div>
+
+    <div class="chips" role="group" aria-label="Filter kategori">
+      <button type="button" class="chip-btn" data-filter="all" aria-pressed="true">Semua</button>
+      {% for c in categories %}
+        <button type="button" class="chip-btn" data-filter="{{ c.pk }}" aria-pressed="false">{{ c.name }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="tiles">
+      {% for item in items %}
+      <button type="button" class="tile"
+              data-id="{{ item.pk }}" data-name="{{ item.name }}" data-price="{{ item.price }}"
+              data-stock="{{ item.stock }}" data-category="{{ item.category_id }}">
+        {% if item.image %}
+          <img class="tile__img" src="{{ item.image.url }}" alt="" loading="lazy">
+        {% else %}
+          <span class="tile__img tile__img--empty" aria-hidden="true">{{ item.name|slice:":1"|upper }}</span>
+        {% endif %}
+        <span class="tile__body">
+          <span class="tile__name">{{ item.name }}</span>
+          <span class="tile__price">{{ item.price|rupiah }}</span>
+          <span class="tile__stock{% if item.is_low_stock %} is-low{% endif %}">Stok {{ item.stock }}</span>
+        </span>
+        <span class="tile__badge" hidden></span>
+      </button>
+      {% endfor %}
+    </div>
+    <p class="muted" data-no-results hidden>Tidak ada menu yang cocok dengan pencarian.</p>
+
+    {% else %}
+    <div class="empty">
+      <h2>Belum ada menu yang bisa dijual</h2>
+      <p>Tambahkan menu, atau aktifkan menu yang sedang dimatikan dan isi stoknya.</p>
+      <a class="btn btn--primary" href="{% url 'menu:menu_list' %}">Buka daftar menu</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="cart" id="cart" aria-labelledby="cart-title">
+    <div class="cart__head">
+      <h2 id="cart-title">Pesanan baru</h2>
+      <button type="button" class="btn btn--ghost btn--sm" data-clear hidden>Kosongkan</button>
+    </div>
+
+    <ul class="cart__list" data-cart-list></ul>
+    <p class="cart__empty" data-cart-empty>Belum ada menu dipilih.</p>
+
+    <form method="post" data-cart-form>
+      {% csrf_token %}
+      <input type="hidden" name="cart" data-cart-input>
+
+      <div class="field">
+        <label for="customer_name">Nama atau nomor meja</label>
+        <input class="input" id="customer_name" name="customer_name" maxlength="80" placeholder="Contoh: Meja 4 / Budi">
+      </div>
+
+      <fieldset class="pay">
+        <legend>Pembayaran</legend>
+        {% for value, label in payments %}
+          <label class="pay__opt">
+            <input type="radio" name="payment_method" value="{{ value }}" {% if forloop.first %}checked{% endif %}>
+            <span>{{ label }}</span>
+          </label>
+        {% endfor %}
+      </fieldset>
+
+      <div class="field" data-cash-block>
+        <label for="cash_received">Uang diterima</label>
+        <div class="cash-row">
+          <input class="input" id="cash_received" name="cash_received" type="number" min="0" step="500" inputmode="numeric" placeholder="0" data-cash>
+          <button type="button" class="btn btn--secondary btn--sm" data-exact>Uang pas</button>
+        </div>
+        <p class="hint" data-change aria-live="polite">&nbsp;</p>
+      </div>
+
+      <div class="cart__total">
+        <span>Total</span>
+        <strong data-total>Rp 0</strong>
+      </div>
+
+      <button class="btn btn--primary btn--block btn--lg" type="submit" data-submit disabled>Bayar dan simpan</button>
+    </form>
+  </aside>
+</div>
+
+<a class="cart-bar" href="#cart" data-bar hidden>
+  <span data-bar-count>0 item</span>
+  <strong data-bar-total>Rp 0</strong>
+  <span>Lihat pesanan</span>
+</a>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'menu/js/pos.js' %}"></script>{% endblock %}
